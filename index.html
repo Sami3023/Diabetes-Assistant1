@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة الكربوهيدرات</title>
+    <style>
+        :root {
+            --bg-color: linear-gradient(135deg, #74ebd5, #acb6e5);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2c3e50;
+            --input-bg: #ecf0f1;
+            --input-text-color: #2c3e50;
+            --table-header-bg: linear-gradient(135deg, #3498db, #2980b9);
+            --table-even-bg: #f5f6fa;
+            --table-hover-bg: #dfe6e9;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --button-bg: linear-gradient(120deg, #007bff, #00bcd4);
+            --button-hover-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: linear-gradient(135deg, #1e2a44, #34495e);
+            --container-bg: rgba(30, 42, 68, 0.95);
+            --text-color: #ecf0f1;
+            --input-bg: #465c71;
+            --input-text-color: #ffffff;
+            --table-header-bg: linear-gradient(135deg, #2ecc71, #27ae60);
+            --table-even-bg: #34495e;
+            --table-hover-bg: #5d7388;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --button-bg: linear-gradient(120deg, #1abc9c, #16a085);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        header {
+            background: var(--button-bg);
+            color: white;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            position: relative;
+        }
+
+        .toggle-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-theme, .toggle-lang, .edit-user-data {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-theme:hover, .toggle-lang:hover, .edit-user-data:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(155, 89, 182, 0.6);
+        }
+
+        .toggle-theme img, .toggle-lang img, .edit-user-data img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            width: 90%;
+            max-width: 1000px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 85vh;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .tab.active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px var(--shadow-color);
+        }
+
+        @media (max-width: 600px) {
+            .tabs {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .tab {
+                width: 100%;
+            }
+        }
+
+        .section {
+            display: none;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+            opacity: 1;
+        }
+
+        h2, h3, label {
+            color: var(--text-color);
+            margin: 15px 0 10px;
+        }
+
+        select, input {
+            width: 100%;
+            max-width: 320px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--input-text-color);
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            background: #fff;
+            color: #2c3e50;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+            outline: none;
+        }
+
+        button {
+            background: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--button-hover-shadow);
+        }
+
+        .reset {
+            background: linear-gradient(120deg, #dc3545, #ff5722);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: var(--container-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            border: none;
+        }
+
+        #foodTable td, #foodTable th {
+            padding: 12px;
+            border: none;
+            font-size: 0.75em;
+        }
+
+        th {
+            background: var(--table-header-bg);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: var(--table-even-bg);
+        }
+
+        tr:hover {
+            background: var(--table-hover-bg);
+        }
+
+        .result, #insulinResult {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        #insulinResult {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 15px;
+            background: var(--button-bg);
+            color: white;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-content a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-content a:hover {
+            color: #f1c40f;
+        }
+
+        .whatsapp-link img {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            transition: transform 0.3s ease;
+        }
+
+        .whatsapp-link:hover img {
+            transform: scale(1.2);
+        }
+
+        .factor-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .calculator-form {
+            display: none;
+        }
+
+        .calculator-form.active {
+            display: block;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .form-field label {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-field select,
+        .form-field input {
+            width: 100%;
+            max-width: 350px;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--input-text-color);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .form-field select:focus,
+        .form-field input:focus {
+            border-color: #f39c12;
+            box-shadow: 0 0 8px rgba(243, 156, 18, 0.5);
+        }
+
+        .form-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .form-buttons button {
+            width: 200px;
+            padding: 14px;
+            font-size: 1.1em;
+        }
+
+        .carb-form-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .carb-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            color: #fff;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .meal-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background: var(--container-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .meal-details span {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .meal-details span.carbs {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border-left: 4px solid #3498db;
+        }
+
+        .meal-details span.carbs:hover {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+
+        .meal-details span.insulin {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .meal-details span.insulin:hover {
+            background-color: rgba(46, 204, 113, 0.2);
+        }
+
+        .meal-details span.blood-sugar-before {
+            background-color: rgba(230, 126, 34, 0.1);
+            color: #e67e22;
+            border-left: 4px solid #e67e22;
+        }
+
+        .meal-details span.blood-sugar-before:hover {
+            background-color: rgba(230, 126, 34, 0.2);
+        }
+
+        .meal-details span.blood-sugar-after {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .meal-details span.blood-sugar-after:hover {
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+
+        .meal-details .label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .meal-details .time {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            background: none;
+            padding: 0;
+        }
+
+        /* Modal Styles for User Data */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--container-bg);
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 20px var(--shadow-color);
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .modal-content .form-field {
+            margin-bottom: 15px;
+        }
+
+        .modal-content .form-buttons {
+            gap: 10px;
+        }
+
+        .date-filter {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-filter .form-field {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        input[type="date"] {
+            cursor: pointer;
+        }
+
+        /* Disable interaction when modal is active */
+        .modal-active .container,
+        .modal-active header,
+        .modal-active footer {
+            pointer-events: none;
+            filter: blur(3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 data-lang="title">مساعد السكري</h1>
+        <div class="toggle-container">
+            <div class="toggle-theme" onclick="toggleTheme()">
+                <img src="https://emojicdn.elk.sh/🌙" alt="Toggle Theme" id="theme-icon">
+            </div>
+            <div class="toggle-lang" onclick="toggleLanguage()">
+                <img src="https://emojicdn.elk.sh/🌍" alt="Toggle Language">
+            </div>
+            <div class="edit-user-data" onclick="openUserDataModal()">
+                <img src="https://emojicdn.elk.sh/👤" alt="Edit User Data">
+            </div>
+        </div>
+    </header>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- User Data Modal -->
+    <div id="user-data-modal" class="modal">
+        <div class="modal-content">
+            <h3 data-lang="userData">بيانات المستخدم</h3>
+            <div class="form-field">
+                <label for="user-name" data-lang="nameLabel">الاسم:</label>
+                <input type="text" id="user-name" placeholder="أدخل الاسم" data-lang-placeholder="namePlaceholder">
+            </div>
+            <div class="form-field">
+                <label for="user-age" data-lang="ageLabel">العمر:</label>
+                <input type="number" id="user-age" placeholder="أدخل العمر" data-lang-placeholder="agePlaceholder">
+            </div>
+            <div class="form-field">
+                <label for="user-gender" data-lang="genderLabel">الجنس:</label>
+                <select id="user-gender">
+                    <option value="" data-lang="selectGender">-- اختر الجنس --</option>
+                    <option value="male" data-lang="male">ذكر</option>
+                    <option value="female" data-lang="female">أنثى</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="user-weight" data-lang="weightLabel">الوزن (كغ):</label>
+                <input type="number" id="user-weight" placeholder="أدخل الوزن" data-lang-placeholder="weightKgPlaceholder">
+            </div>
+            <div class="form-buttons">
+                <button onclick="saveUserData()" data-lang="saveUserData">حفظ البيانات</button>
+                <button class="reset" onclick="resetUserData()" data-lang="reset">مسح البيانات</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('factors')" data-lang="insulinCalc">حساب المعاملات</button>
+            <button class="tab" onclick="showSection('carb-calculator')" data-lang="title">حاسبة الكربوهيدرات</button>
+            <button class="tab" onclick="showSection('blood-sugar')" data-lang="bloodSugarTracking">تتبع السكر</button>
+            <button class="tab" onclick="showSection('meal-archive')" data-lang="mealArchive">أرشيف الوجبات</button>
+        </div>
+
+        <!-- Factors Section -->
+        <div id="factors" class="section active">
+            <h2 data-lang="insulinCalc">حساب معاملات الإنسولين</h2>
+            <div class="factor-buttons">
+                <button onclick="showForm('isf')">معامل حساسية الأنسولين (ISF)</button>
+                <button onclick="showForm('cir')">معامل الكارب (CIR)</button>
+                <button onclick="showForm('correction')">الجرعة التصحيحية</button>
+            </div>
+            <div id="isf-form" class="calculator-form">
+                <h3>حساب معامل حساسية الأنسولين (ISF)</h3>
+                <label for="tdi-isf">إجمالي وحدات الأنسولين اليومية (TDI):</label>
+                <input type="number" id="tdi-isf" placeholder="أدخل القيمة" data-lang-placeholder="bloodSugarPlaceholder">
+                <button onclick="calculateISF()">احتساب</button>
+                <button class="reset" onclick="resetFields('isf')" data-lang="reset">مسح الحقول</button>
+                <div id="isf-result" class="result"></div>
+            </div>
+            <div id="cir-form" class="calculator-form">
+                <h3>حساب معامل الكارب (CIR)</h3>
+                <label for="tdi-cir">إجمالي وحدات الأنسولين اليومية (TDI):</label>
+                <input type="number" id="tdi-cir" placeholder="أدخل القيمة" data-lang-placeholder="bloodSugarPlaceholder">
+                <button onclick="calculateCIR()">احتساب</button>
+                <button class="reset" onclick="resetFields('cir')" data-lang="reset">مسح الحقول</button>
+                <div id="cir-result" class="result"></div>
+            </div>
+            <div id="correction-form" class="calculator-form">
+                <h3>حساب الجرعة التصحيحية</h3>
+                <div class="form-field">
+                    <label for="current-sugar">مستوى السكر الحالي (ملغ/ديسيلتر):</label>
+                    <input type="number" id="current-sugar" placeholder="أدخل القيمة" data-lang-placeholder="bloodSugarPlaceholder">
+                </div>
+                <div class="form-field">
+                    <label for="target-sugar">مستوى السكر المستهدف (ملغ/ديسيلتر):</label>
+                    <input type="number" id="target-sugar" placeholder="أدخل القيمة" data-lang-placeholder="bloodSugarPlaceholder">
+                </div>
+                <div class="form-field">
+                    <label for="isf-correction">معامل حساسية الأنسولين (ISF):</label>
+                    <input type="number" id="isf-correction" placeholder="أدخل القيمة" data-lang-placeholder="bloodSugarPlaceholder">
+                </div>
+                <div class="form-buttons">
+                    <button onclick="calculateCorrectionDose()">احتساب</button>
+                    <button class="reset" onclick="resetFields('correction')" data-lang="reset">مسح الحقول</button>
+                </div>
+                <div id="correction-result" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Carb Calculator Section -->
+        <div id="carb-calculator" class="section">
+            <h2 data-lang="title">حاسبة الكربوهيدرات 🍽️</h2>
+            <div class="carb-form-fields">
+                <div class="form-field">
+                    <label for="mealType" data-lang="mealTypeLabel">اختر نوع الوجبة:</label>
+                    <select id="mealType">
+                        <option value="0" data-lang="selectMeal">-- اختر نوع الوجبة --</option>
+                        <option value="breakfast" data-lang="breakfast">إفطار</option>
+                        <option value="snack1" data-lang="snack1">وجبة خفيفة 1</option>
+                        <option value="lunch" data-lang="lunch">غداء</option>
+                        <option value="snack2" data-lang="snack2">وجبة خفيفة 2</option>
+                        <option value="dinner" data-lang="dinner">عشاء</option>
+                        <option value="snack3" data-lang="snack3">وجبة خفيفة 3</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="category" data-lang="categoryLabel">اختر نوع الطعام:</label>
+                    <select id="category" onchange="updateFoodList()">
+                        <option value="0" data-lang="selectCategory">-- اختر التصنيف --</option>
+                        <option value="bakery" data-lang="bakery">🍞 الخبز</option>
+                        <option value="grains_legumes" data-lang="grains_legumes">🌾 الحبوب والبقوليات</option>
+                        <option value="snacks" data-lang="snacks">🍕 المعجنات والمقبلات</option>
+                        <option value="main_dishes" data-lang="main_dishes">🍛 الأطباق الرئيسية</option>
+                        <option value="desserts" data-lang="desserts">🍰 الحلويات</option>
+                        <option value="nuts_seeds" data-lang="nuts_seeds">🥜 المكسرات والبذور</option>
+                        <option value="vegetables" data-lang="vegetables">🥕 الخضروات</option>
+                        <option value="fruits" data-lang="fruits">🍎 الفواكه</option>
+                        <option value="dairy" data-lang="dairy">🧀 منتجات الألبان</option>
+                        <option value="flour" data-lang="flour">🌾 الدقيق</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="food" data-lang="foodLabel">اختر الطعام:</label>
+                    <select id="food">
+                        <option value="0" data-lang="selectFood">-- اختر الطعام --</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="weight" data-lang="weightLabel">أدخل الوزن (غرام):</label>
+                    <input type="number" id="weight" placeholder="أدخل الوزن" data-lang-placeholder="weightPlaceholder">
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button onclick="addFood()" data-lang="addFood">إضافة إلى الوجبة</button>
+            </div>
+            <h3 data-lang="addedFoods">الأطعمة المضافة:</h3>
+            <table id="foodTable">
+                <thead>
+                    <tr>
+                        <th data-lang="image">الصورة</th>
+                        <th data-lang="foodName">اسم الطعام</th>
+                        <th data-lang="weightGram">الوزن (غرام)</th>
+                        <th data-lang="carbsGram">الكربوهيدرات (غ)</th>
+                        <th data-lang="actions">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="calculateTotalCarbs()" data-lang="calcTotalCarbs">احسب الكربوهيدرات الكلية</button>
+            <button class="reset" onclick="resetAll()" data-lang="reset">إعادة تعيين</button>
+            <div id="result" class="carb-result"></div>
+            <h3 data-lang="insulinCalc">حساب معاملات الإنسولين</h3>
+            <label for="carbRatio" data-lang="carbRatioLabel">معامل الكربوهيدرات (عدد الكربوهيدرات لكل وحدة أنسولين):</label>
+            <input type="number" id="carbRatio" placeholder="أدخل معامل الكربوهيدرات" data-lang-placeholder="carbRatioPlaceholder">
+            <button onclick="calculateInsulinDose()" data-lang="calcInsulin">احسب جرعات الإنسولين</button>
+            <div id="insulinResult"></div>
+        </div>
+
+        <!-- Blood Sugar Tracking Section -->
+        <div id="blood-sugar" class="section">
+            <h2 data-lang="bloodSugarTracking">تتبع مستوى السكر في الدم</h2>
+            <label for="bloodSugar" data-lang="bloodSugarLabel">مستوى السكر (ملغ/ديسيلتر):</label>
+            <input type="number" id="bloodSugar" placeholder="أدخل مستوى SUGAR" data-lang-placeholder="bloodSugarPlaceholder">
+            <label for="bloodSugarType">نوع القياس:</label>
+            <select id="bloodSugarType">
+                <option value="" data-lang="selectBloodSugarType">-- اختر --</option>
+                <option value="before" data-lang="beforeMeal">قبل الوجبة</option>
+                <option value="after" data-lang="afterMeal">بعد الوجبة</option>
+            </select>
+            <button onclick="addBloodSugar()" data-lang="addBloodSugar">إضافة القياس</button>
+        </div>
+
+        <!-- Meal Archive Section -->
+        <div id="meal-archive" class="section">
+            <h2 data-lang="mealArchive">أرشيف الوجبات</h2>
+            <div class="date-filter">
+                <div class="form-field">
+                    <label for="start-date" data-lang="startDateLabel">تاريخ البداية:</label>
+                    <input type="date" id="start-date" onchange="filterArchive()">
+                </div>
+                <div class="form-field">
+                    <label for="end-date" data-lang="endDateLabel">تاريخ النهاية:</label>
+                    <input type="date" id="end-date" onchange="filterArchive()">
+                </div>
+            </div>
+            <div id="user-data-display" style="margin-bottom: 20px; padding: 15px; background: var(--input-bg); border-radius: 10px; box-shadow: 0 4px 8px var(--shadow-color);"></div>
+            <table id="archive-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th data-lang="breakfast">إفطار</th>
+                        <th data-lang="snack1">وجبة خفيفة 1</th>
+                        <th data-lang="lunch">غداء</th>
+                        <th data-lang="snack2">وجبة خفيفة 2</th>
+                        <th data-lang="dinner">عشاء</th>
+                        <th data-lang="snack3">وجبة خفيفة 3</th>
+                    </tr>
+                </thead>
+                <tbody id="archive-table-body"></tbody>
+            </table>
+            <button onclick="exportToPDF()" data-lang="exportAsPDF">تصدير كـ PDF</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 مساعد السكري. جميع الحقوق محفوظة.</p>
+            <a href="mailto:samialshuhail@gmail.com">samialshuhail@gmail.com</a>
+            <a href="https://wa.me/+966592744504" class="whatsapp-link" target="_blank">
+                <img src="https://emojicdn.elk.sh/📱" alt="WhatsApp">
+            </a>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
