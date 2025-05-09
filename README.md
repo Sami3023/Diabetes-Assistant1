@@ -1,1 +1,1 @@
-# Diabetes-Assistant1
+# Diabetes-Assistant1Diabetes-AssistantDiabetes-AssistantDiabetes Assistant is a web-based application designed to support individuals with diabetes in managing their insulin doses, tracking blood sugar levels, calculating carbohydrate intake, and archiving meals. The application features a user-friendly interface with support for both Arabic and English languages, a light/dark theme toggle, and a responsive design suitable for various devices.
